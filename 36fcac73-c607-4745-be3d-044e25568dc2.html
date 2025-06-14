@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vibe Coding | Music Collaboration Platform</title>
+    <base target="_self">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@preline/preline@2.0.0/dist/preline.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .animate-pulse-slow {
+            animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        .waveform {
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899, #f59e0b);
+            background-size: 400% 400%;
+            animation: gradient 8s ease infinite;
+        }
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .track-card:hover .play-btn {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .play-btn {
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-full flex flex-col">
+    <!-- Navigation -->
+    <nav class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 fixed w-full z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="#" class="flex-shrink-0 flex items-center" onclick="event.preventDefault(); navigate('home')">
+                        <i class="fas fa-wave-square text-2xl text-primary-600 dark:text-primary-400 mr-2"></i>
+                        <span class="text-xl font-bold">Vibe Coding</span>
+                    </a>
+                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                        <a href="#" onclick="event.preventDefault(); navigate('discover')" class="border-primary-500 dark:border-primary-400 text-gray-900 dark:text-white inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Discover</a>
+                        <a href="#" onclick="event.preventDefault(); navigate('studio')" class="border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-500 hover:text-gray-700 dark:hover:text-gray-200 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Studio</a>
+                        <a href="#" onclick="event.preventDefault(); navigate('library')" class="border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-500 hover:text-gray-700 dark:hover:text-gray-200 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Library</a>
+                        <a href="#" onclick="event.preventDefault(); navigate('community')" class="border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-500 hover:text-gray-700 dark:hover:text-gray-200 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Community</a>
+                    </div>
+                </div>
+                <div class="hidden sm:ml-6 sm:flex sm:items-center">
+                    <div class="relative mx-4">
+                        <input type="text" placeholder="Search tracks, artists, samples..." class="bg-gray-100 dark:bg-gray-700 rounded-full py-1 px-4 pl-10 w-64 focus:outline-none focus:ring-2 focus:ring-primary-500">
+                        <i class="fas fa-search absolute left-3 top-2 text-gray-400"></i>
+                    </div>
+                    <button class="p-1 rounded-full text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500">
+                        <i class="fas fa-bell text-xl"></i>
+                    </button>
+                    <div class="ml-3 relative">
+                        <div>
+                            <button type="button" class="bg-gray-100 dark:bg-gray-700 flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-primary-500" id="user-menu-button" aria-expanded="false" aria-haspopup="true">
+                                <span class="sr-only">Open user menu</span>
+                                <img class="h-8 w-8 rounded-full" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="">
+                            </button>
+                        </div>
+                    </div>
+                    <button class="ml-4 bg-primary-600 dark:bg-primary-700 hover:bg-primary-700 dark:hover:bg-primary-600 text-white px-4 py-1 rounded-full text-sm font-medium transition-colors">
+                        Upload
+                    </button>
+                </div>
+                <div class="-mr-2 flex items-center sm:hidden">
+                    <button type="button" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500" aria-controls="mobile-menu" aria-expanded="false">
+                        <span class="sr-only">Open main menu</span>
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile menu -->
+    <div class="hidden sm:hidden pt-16" id="mobile-menu">
+        <div class="pt-2 pb-3 space-y-1">
+            <a href="#" onclick="event.preventDefault(); navigate('discover')" class="bg-primary-50 dark:bg-gray-700 border-primary-500 dark:border-primary-400 text-primary-700 dark:text-white block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Discover</a>
+            <a href="#" onclick="event.preventDefault(); navigate('studio')" class="border-transparent text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-500 hover:text-gray-700 dark:hover:text-gray-200 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Studio</a>
+            <a href="#" onclick="event.preventDefault(); navigate('library')" class="border-transparent text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-500 hover:text-gray-700 dark:hover:text-gray-200 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Library</a>
+            <a href="#" onclick="event.preventDefault(); navigate('community')" class="border-transparent text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-500 hover:text-gray-700 dark:hover:text-gray-200 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Community</a>
+        </div>
+        <div class="pt-4 pb-3 border-t border-gray-200 dark:border-gray-700">
+            <div class="flex items-center px-4">
+                <div class="flex-shrink-0">
+                    <img class="h-10 w-10 rounded-full" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="">
+                </div>
+                <div class="ml-3">
+                    <div class="text-base font-medium text-gray-800 dark:text-white">Tom Cook</div>
+                    <div class="text-sm font-medium text-gray-500 dark:text-gray-300">tom@example.com</div>
+                </div>
+                <button class="ml-auto flex-shrink-0 bg-gray-100 dark:bg-gray-700 p-1 rounded-full text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500">
+                    <i class="fas fa-bell text-xl"></i>
+                </button>
+            </div>
+            <div class="mt-3 space-y-1">
+                <a href="#" onclick="event.preventDefault(); navigate('profile')" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700">Your Profile</a>
+                <a href="#" onclick="event.preventDefault(); navigate('settings')" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700">Settings</a>
+                <a href="#" onclick="event.preventDefault(); navigate('logout')" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700">Sign out</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex-1 pt-16 pb-20">
+        <!-- Hero Section -->
+        <div class="bg-gradient-to-r from-primary-600 to-indigo-600 dark:from-primary-800 dark:to-indigo-800 text-white">
+            <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+                <div class="lg:grid lg:grid-cols-2 lg:gap-8 items-center">
+                    <div class="mb-8 lg:mb-0">
+                        <h1 class="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl mb-4">
+                            Create. Collaborate. Monetize.
+                        </h1>
+                        <p class="text-xl text-primary-100 dark:text-primary-200 max-w-3xl">
+                            The ultimate platform for music creators. Build tracks with others in real-time, share your sounds, and earn from your creations.
+                        </p>
+                        <div class="mt-8 flex flex-col sm:flex-row gap-4">
+                            <button class="bg-white text-primary-600 hover:bg-gray-100 px-6 py-3 rounded-full text-lg font-semibold transition-colors">
+                                Start Creating
+                            </button>
+                            <button class="border-2 border-white text-white hover:bg-white hover:text-primary-600 px-6 py-3 rounded-full text-lg font-semibold transition-colors">
+                                Explore Community
+                            </button>
+                        </div>
+                    </div>
+                    <div class="relative">
+                        <div class="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20">
+                            <div class="flex items-center mb-4">
+                                <div class="h-3 w-3 rounded-full bg-red-500 mr-2"></div>
+                                <div class="h-3 w-3 rounded-full bg-yellow-500 mr-2"></div>
+                                <div class="h-3 w-3 rounded-full bg-green-500 mr-2"></div>
+                                <div class="text-sm ml-auto opacity-70">Vibe Studio</div>
+                            </div>
+                            <div class="bg-gray-900 rounded-lg p-4">
+                                <div class="flex mb-4">
+                                    <div class="w-1/4 pr-2">
+                                        <div class="bg-gray-800 rounded h-8 mb-2"></div>
+                                        <div class="bg-gray-800 rounded h-8 mb-2"></div>
+                                        <div class="bg-gray-800 rounded h-8 mb-2"></div>
+                                        <div class="bg-gray-800 rounded h-8"></div>
+                                    </div>
+                                    <div class="w-3/4">
+                                        <div class="waveform h-32 rounded-lg mb-2"></div>
+                                        <div class="flex justify-between">
+                                            <div class="bg-gray-800 rounded h-4 w-16"></div>
+                                            <div class="flex space-x-2">
+                                                <div class="bg-gray-800 rounded h-4 w-4"></div>
+                                                <div class="bg-gray-800 rounded h-4 w-4"></div>
+                                                <div class="bg-gray-800 rounded h-4 w-4"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <div class="flex space-x-2">
+                                        <div class="bg-gray-800 rounded-full h-8 w-8"></div>
+                                        <div class="bg-gray-800 rounded-full h-8 w-8"></div>
+                                        <div class="bg-gray-800 rounded-full h-8 w-8"></div>
+                                    </div>
+                                    <div class="bg-primary-600 rounded-full h-10 w-10 flex items-center justify-center">
+                                        <i class="fas fa-play text-white"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Featured Tracks -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-2xl font-bold">Featured Tracks</h2>
+                <a href="#" onclick="event.preventDefault(); navigate('discover')" class="text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 font-medium">View all</a>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="featured-tracks">
+                <!-- Tracks will be inserted here by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Trending Samples -->
+        <div class="bg-gray-100 dark:bg-gray-800 py-12">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center mb-8">
+                    <h2 class="text-2xl font-bold">Trending Samples</h2>
+                    <a href="#" onclick="event.preventDefault(); navigate('library')" class="text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 font-medium">Browse library</a>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4" id="trending-samples">
+                    <!-- Samples will be inserted here by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Creators -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-2xl font-bold">Top Creators</h2>
+                <a href="#" onclick="event.preventDefault(); navigate('community')" class="text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 font-medium">Explore community</a>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6" id="top-creators">
+                <!-- Creators will be inserted here by JavaScript -->
+            </div>
+        </div>
+
+        <!-- CTA Section -->
+        <div class="bg-primary-600 dark:bg-primary-800 text-white">
+            <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8 text-center">
+                <h2 class="text-3xl font-extrabold mb-4">Ready to start creating?</h2>
+                <p class="text-xl text-primary-100 dark:text-primary-200 max-w-3xl mx-auto mb-8">
+                    Join thousands of music creators already building the future of collaborative music production.
+                </p>
+                <button class="bg-white text-primary-600 hover:bg-gray-100 px-8 py-3 rounded-full text-lg font-semibold transition-colors">
+                    Sign Up Free
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-gray-300">
+        <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-white text-sm font-semibold tracking-wider uppercase mb-4">Product</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" onclick="event.preventDefault(); navigate('features')" class="hover:text-white">Features</a></li>
+                        <li><a href="#" onclick="event.preventDefault(); navigate('pricing')" class="hover:text-white">Pricing</a></li>
+                        <li><a href="#" onclick="event.preventDefault(); navigate('studio')" class="hover:text-white">Studio</a></li>
+                        <li><a href="#" onclick="event.preventDefault(); navigate('library')" class="hover:text-white">Sample Library</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-white text-sm font-semibold tracking-wider uppercase mb-4">Community</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" onclick="event.preventDefault(); navigate('creators')" class="hover:text-white">For Creators</a></li>
+                        <li><a href="#" onclick="event.preventDefault(); navigate('collaborate')" class="hover:text-white">Collaborate</a></li>
+                        <li><a href="#" onclick="event.preventDefault(); navigate('events')" class="hover:text-white">Events</a></li>
+                        <li><a href="#" onclick="event.preventDefault(); navigate('blog')" class="hover:text-white">Blog</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-white text-sm font-semibold tracking-wider uppercase mb-4">Company</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" onclick="event.preventDefault(); navigate('about')" class="hover:text-white">About</a></li>
+                        <li><a href="#" onclick="event.preventDefault(); navigate('careers')" class="hover:text-white">Careers</a></li>
+                        <li><a href="#" onclick="event.preventDefault(); navigate('support')" class="hover:text-white">Support</a></li>
+                        <li><a href="#" onclick="event.preventDefault(); navigate('contact')" class="hover:text-white">Contact</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-white text-sm font-semibold tracking-wider uppercase mb-4">Legal</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" onclick="event.preventDefault(); navigate('privacy')" class="hover:text-white">Privacy</a></li>
+                        <li><a href="#" onclick="event.preventDefault(); navigate('terms')" class="hover:text-white">Terms</a></li>
+                        <li><a href="#" onclick="event.preventDefault(); navigate('licensing')" class="hover:text-white">Licensing</a></li>
+                        <li><a href="#" onclick="event.preventDefault(); navigate('cookie')" class="hover:text-white">Cookie Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="mt-12 border-t border-gray-700 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <div class="flex items-center mb-4 md:mb-0">
+                    <i class="fas fa-wave-square text-2xl text-primary-400 mr-2"></i>
+                    <span class="text-xl font-bold">Vibe Coding</span>
+                </div>
+                <div class="flex space-x-6">
+                    <a href="#" class="text-gray-400 hover:text-white">
+                        <i class="fab fa-twitter text-xl"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white">
+                        <i class="fab fa-instagram text-xl"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white">
+                        <i class="fab fa-facebook text-xl"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white">
+                        <i class="fab fa-youtube text-xl"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white">
+                        <i class="fab fa-tiktok text-xl"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="mt-8 text-sm text-gray-400 text-center">
+                &copy; 2023 Vibe Coding. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Player Bar -->
+    <div class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 h-20 flex items-center px-4">
+        <div class="max-w-7xl mx-auto w-full flex items-center">
+            <div class="flex items-center w-1/4">
+                <img src="https://source.unsplash.com/random/80x80/?album" alt="Album cover" class="h-14 w-14 rounded mr-4">
+                <div>
+                    <div class="font-medium">Cosmic Journey</div>
+                    <div class="text-sm text-gray-500 dark:text-gray-400">Stellar Beats</div>
+                </div>
+                <button class="ml-4 text-gray-400 hover:text-primary-600 dark:hover:text-primary-400">
+                    <i class="far fa-heart"></i>
+                </button>
+            </div>
+            <div class="w-2/4 flex flex-col items-center">
+                <div class="flex items-center mb-2">
+                    <button class="mx-2 text-gray-400 hover:text-primary-600 dark:hover:text-primary-400">
+                        <i class="fas fa-random"></i>
+                    </button>
+                    <button class="mx-2 text-gray-400 hover:text-primary-600 dark:hover:text-primary-400">
+                        <i class="fas fa-step-backward"></i>
+                    </button>
+                    <button class="mx-2 bg-primary-600 dark:bg-primary-700 hover:bg-primary-700 dark:hover:bg-primary-600 text-white rounded-full h-10 w-10 flex items-center justify-center">
+                        <i class="fas fa-play"></i>
+                    </button>
+                    <button class="mx-2 text-gray-400 hover:text-primary-600 dark:hover:text-primary-400">
+                        <i class="fas fa-step-forward"></i>
+                    </button>
+                    <button class="mx-2 text-gray-400 hover:text-primary-600 dark:hover:text-primary-400">
+                        <i class="fas fa-redo"></i>
+                    </button>
+                </div>
+                <div class="w-full flex items-center">
+                    <span class="text-xs text-gray-500 dark:text-gray-400 mr-2">1:23</span>
+                    <div class="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-1">
+                        <div class="bg-primary-600 dark:bg-primary-400 h-1 rounded-full" style="width: 30%"></div>
+                    </div>
+                    <span class="text-xs text-gray-500 dark:text-gray-400 ml-2">3:45</span>
+                </div>
+            </div>
+            <div class="w-1/4 flex justify-end items-center">
+                <button class="mx-2 text-gray-400 hover:text-primary-600 dark:hover:text-primary-400">
+                    <i class="fas fa-microphone"></i>
+                </button>
+                <button class="mx-2 text-gray-400 hover:text-primary-600 dark:hover:text-primary-400">
+                    <i class="fas fa-list-ul"></i>
+                </button>
+                <button class="mx-2 text-gray-400 hover:text-primary-600 dark:hover:text-primary-400">
+                    <i class="fas fa-volume-up"></i>
+                </button>
+                <div class="w-20 ml-2 bg-gray-200 dark:bg-gray-700 rounded-full h-1">
+                    <div class="bg-primary-600 dark:bg-primary-400 h-1 rounded-full" style="width: 70%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data for the platform
+        const featuredTracks = [
+            {
+                id: 1,
+                title: "Neon Dreams",
+                artist: "Synthwave Collective",
+                duration: "3:45",
+                plays: "124K",
+                likes: "8.2K",
+                image: "https://source.unsplash.com/random/300x300/?music,electronic",
+                isVerified: true
+            },
+            {
+                id: 2,
+                title: "Midnight Drive",
+                artist: "Luna Beats",
+                duration: "4:12",
+                plays: "89K",
+                likes: "6.5K",
+                image: "https://source.unsplash.com/random/300x300/?music,night",
+                isVerified: false
+            },
+            {
+                id: 3,
+                title: "Cosmic Journey",
+                artist: "Stellar Beats",
+                duration: "5:30",
+                plays: "210K",
+                likes: "15.3K",
+                image: "https://source.unsplash.com/random/300x300/?music,space",
+                isVerified: true
+            },
+            {
+                id: 4,
+                title: "Urban Flow",
+                artist: "City Producers",
+                duration: "3:18",
+                plays: "76K",
+                likes: "5.1K",
+                image: "https://source.unsplash.com/random/300x300/?music,urban",
+                isVerified: false
+            }
+        ];
+
+        const trendingSamples = [
+            {
+                id: 1,
+                name: "808 Kick",
+                type: "Drum",
+                downloads: "24K",
+                price: "$2.99",
+                image: "https://source.unsplash.com/random/200x200/?music,drum"
+            },
+            {
+                id: 2,
+                name: "Jazz Piano Loop",
+                type: "Melody",
+                downloads: "18K",
+                price: "Free",
+                image: "https://source.unsplash.com/random/200x200/?music,piano"
+            },
+            {
+                id: 3,
+                name: "Vocal Chop Pack",
+                type: "Vocals",
+                downloads: "32K",
+                price: "$4.99",
+                image: "https://source.unsplash.com/random/200x200/?music,vocal"
+            },
+            {
+                id: 4,
+                name: "Analog Synth Bass",
+                type: "Bass",
+                downloads: "15K",
+                price: "$1.99",
+                image: "https://source.unsplash.com/random/200x200/?music,synth"
+            },
+            {
+                id: 5,
+                name: "Orchestral Strings",
+                type: "Strings",
+                downloads: "12K",
+                price: "$3.99",
+                image: "https://source.unsplash.com/random/200x200/?music,orchestra"
+            }
+        ];
+
+        const topCreators = [
+            {
+                id: 1,
+                name: "Synthwave Collective",
+                followers: "124K",
+                isVerified: true,
+                image: "https://source.unsplash.com/random/150x150/?artist"
+            },
+            {
+                id: 2,
+                name: "Luna Beats",
+                followers: "89K",
+                isVerified: false,
+                image: "https://source.unsplash.com/random/150x150/?producer"
+            },
+            {
+                id: 3,
+                name: "Stellar Beats",
+                followers: "210K",
+                isVerified: true,
+                image: "https://source.unsplash.com/random/150x150/?dj"
+            },
+            {
+                id: 4,
+                name: "City Producers",
+                followers: "76K",
+                isVerified: false,
+                image: "https://source.unsplash.com/random/150x150/?musician"
+            },
+            {
+                id: 5,
+                name: "Digital Waves",
+                followers: "145K",
+                isVerified: true,
+                image: "https://source.unsplash.com/random/150x150/?electronic"
+            },
+            {
+                id: 6,
+                name: "Ambient Dreams",
+                followers: "67K",
+                isVerified: false,
+                image: "https://source.unsplash.com/random/150x150/?ambient"
+            }
+        ];
+
+        // Render featured tracks
+        const featuredTracksContainer = document.getElementById('featured-tracks');
+        featuredTracks.forEach(track => {
+            const trackElement = document.createElement('div');
+            trackElement.className = 'track-card bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow hover:shadow-lg transition-shadow';
+            trackElement.innerHTML = `
+                <div class="relative">
+                    <img src="${track.image}" alt="${track.title}" class="w-full h-48 object-cover">
+                    <button class="play-btn absolute bottom-4 right-4 bg-primary-600 dark:bg-primary-700 hover:bg-primary-700 dark:hover:bg-primary-600 text-white rounded-full h-12 w-12 flex items-center justify-center shadow-lg">
+                        <i class="fas fa-play"></i>
+                    </button>
+                </div>
+                <div class="p-4">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="font-bold truncate">${track.title}</h3>
+                            <div class="flex items-center">
+                                <p class="text-sm text-gray-500 dark:text-gray-400">${track.artist}</p>
+                                ${track.isVerified ? '<i class="fas fa-check-circle text-primary-500 ml-1 text-xs"></i>' : ''}
+                            </div>
+                        </div>
+                        <span class="text-xs text-gray-500 dark:text-gray-400">${track.duration}</span>
+                    </div>
+                    <div class="flex justify-between mt-3 text-xs text-gray-500 dark:text-gray-400">
+                        <span><i class="fas fa-play mr-1"></i> ${track.plays}</span>
+                        <span><i class="fas fa-heart mr-1"></i> ${track.likes}</span>
+                    </div>
+                </div>
+            `;
+            featuredTracksContainer.appendChild(trackElement);
+        });
+
+        // Render trending samples
+        const trendingSamplesContainer = document.getElementById('trending-samples');
+        trendingSamples.forEach(sample => {
+            const sampleElement = document.createElement('div');
+            sampleElement.className = 'bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow hover:shadow-lg transition-shadow';
+            sampleElement.innerHTML = `
+                <img src="${sample.image}" alt="${sample.name}" class="w-full h-32 object-cover">
+                <div class="p-3">
+                    <h3 class="font-medium text-sm truncate">${sample.name}</h3>
+                    <div class="flex justify-between items-center mt-1">
+                        <span class="text-xs text-gray-500 dark:text-gray-400">${sample.type}</span>
+                        <span class="text-xs font-medium ${sample.price === 'Free' ? 'text-green-500' : 'text-primary-500'}">${sample.price}</span>
+                    </div>
+                    <div class="flex justify-between items-center mt-2 text-xs text-gray-500 dark:text-gray-400">
+                        <span><i class="fas fa-download mr-1"></i> ${sample.downloads}</span>
+                        <button class="text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300">
+                            <i class="fas fa-shopping-cart"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            trendingSamplesContainer.appendChild(sampleElement);
+        });
+
+        // Render top creators
+        const topCreatorsContainer = document.getElementById('top-creators');
+        topCreators.forEach(creator => {
+            const creatorElement = document.createElement('div');
+            creatorElement.className = 'text-center';
+            creatorElement.innerHTML = `
+                <div class="relative mx-auto mb-2">
+                    <img src="${creator.image}" alt="${creator.name}" class="h-20 w-20 rounded-full object-cover mx-auto">
+                    ${creator.isVerified ? '<i class="fas fa-check-circle absolute bottom-0 right-0 text-primary-500 bg-white rounded-full"></i>' : ''}
+                </div>
+                <h3 class="font-medium text-sm">${creator.name}</h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400">${creator.followers} followers</p>
+                <button class="mt-2 text-xs bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 px-3 py-1 rounded-full transition-colors">
+                    Follow
+                </button>
+            `;
+            topCreatorsContainer.appendChild(creatorElement);
+        });
+
+        // Navigation function
+        function navigate(page) {
+            console.log(`Navigating to ${page}`);
+            // In a real app, this would handle routing
+            // For this demo, we'll just log the navigation
+        }
+
+        // Mobile menu toggle
+        const mobileMenuButton = document.querySelector('[aria-controls="mobile-menu"]');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        mobileMenuButton.addEventListener('click', () => {
+            const expanded = mobileMenuButton.getAttribute('aria-expanded') === 'true';
+            mobileMenuButton.setAttribute('aria-expanded', !expanded);
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Dark mode toggle (system preference)
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+
+        // Listen for system color scheme changes
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            if (event.matches) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        });
+    </script>
+</body>
+</html>
